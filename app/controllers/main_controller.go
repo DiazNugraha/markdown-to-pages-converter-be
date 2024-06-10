@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"fmt"
 	"log"
+	"markdown-to-pages-converter/app/services"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,13 +22,11 @@ func GeneratePages(ctx *fiber.Ctx) error {
 		})
 	}
 
-	for _, file := range files {
-		err := ctx.SaveFile(file, fmt.Sprintf("./public/%s", file.Filename))
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		log.Println("success save")
+	if err := services.MainService(ctx, files); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": true,
+			"msg":   "File buffer error: " + err.Error(),
+		})
 	}
 
 	return ctx.JSON(fiber.Map{
