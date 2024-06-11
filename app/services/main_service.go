@@ -5,22 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"markdown-to-pages-converter/app/types"
 	"mime/multipart"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-type FileBuffer struct {
-	Name    string
-	Content *bytes.Buffer
-}
-
-type Directory struct {
-	Name    string
-	Files   []FileBuffer
-	SubDirs map[string]*Directory
-}
 
 func MainService(ctx *fiber.Ctx, files []*multipart.FileHeader) error {
 	for _, file := range files {
@@ -35,7 +25,7 @@ func MainService(ctx *fiber.Ctx, files []*multipart.FileHeader) error {
 	return nil
 }
 
-func saveFile(ctx *fiber.Ctx, file *multipart.FileHeader) (*Directory, error) {
+func saveFile(ctx *fiber.Ctx, file *multipart.FileHeader) (*types.Directory, error) {
 	fileContent, err := file.Open()
 	if err != nil {
 		return nil, err
@@ -53,10 +43,10 @@ func saveFile(ctx *fiber.Ctx, file *multipart.FileHeader) (*Directory, error) {
 		return nil, err
 	}
 
-	rootDir := &Directory{
+	rootDir := &types.Directory{
 		Name:    "",
-		Files:   []FileBuffer{},
-		SubDirs: make(map[string]*Directory),
+		Files:   []types.FileBuffer{},
+		SubDirs: make(map[string]*types.Directory),
 	}
 
 	for _, zipFile := range zipReader.File {
@@ -68,13 +58,13 @@ func saveFile(ctx *fiber.Ctx, file *multipart.FileHeader) (*Directory, error) {
 	return rootDir, nil
 }
 
-func processFile(zipFile *zip.File, currentDir *Directory) error {
+func processFile(zipFile *zip.File, currentDir *types.Directory) error {
 	if zipFile.FileInfo().IsDir() {
 		subDirName := strings.TrimSuffix(zipFile.Name, "/")
-		currentDir.SubDirs[subDirName] = &Directory{
+		currentDir.SubDirs[subDirName] = &types.Directory{
 			Name:    subDirName,
-			Files:   []FileBuffer{},
-			SubDirs: make(map[string]*Directory),
+			Files:   []types.FileBuffer{},
+			SubDirs: make(map[string]*types.Directory),
 		}
 		return nil
 	}
@@ -98,10 +88,10 @@ func processFile(zipFile *zip.File, currentDir *Directory) error {
 		if subDir, exists := dir.SubDirs[part]; exists {
 			dir = subDir
 		} else {
-			newDir := &Directory{
+			newDir := &types.Directory{
 				Name:    part,
-				Files:   []FileBuffer{},
-				SubDirs: make(map[string]*Directory),
+				Files:   []types.FileBuffer{},
+				SubDirs: make(map[string]*types.Directory),
 			}
 
 			dir.SubDirs[part] = newDir
@@ -109,7 +99,7 @@ func processFile(zipFile *zip.File, currentDir *Directory) error {
 		}
 	}
 
-	dir.Files = append(dir.Files, FileBuffer{
+	dir.Files = append(dir.Files, types.FileBuffer{
 		Name:    pathParts[len(pathParts)-1],
 		Content: &fileBuffer,
 	})
@@ -117,7 +107,7 @@ func processFile(zipFile *zip.File, currentDir *Directory) error {
 	return nil
 }
 
-func printDirectory(dir *Directory, indent int) {
+func printDirectory(dir *types.Directory, indent int) {
 	prefix := strings.Repeat(" ", indent)
 	fmt.Printf("%s%s\n", prefix, dir.Name)
 	for _, file := range dir.Files {
