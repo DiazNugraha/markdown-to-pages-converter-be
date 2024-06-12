@@ -19,18 +19,20 @@ func GeneratePages(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   "No file uploaded",
+			"data":  nil,
 		})
 	}
 
-	if err := services.MainService(ctx, files); err != nil {
+	zipFile, err := services.MainService(ctx, files)
+
+	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": true,
 			"msg":   "File buffer error: " + err.Error(),
+			"data":  nil,
 		})
 	}
-
-	return ctx.JSON(fiber.Map{
-		"error": false,
-		"msg":   nil,
-	})
+	ctx.Set("Content-Type", "application/zip")
+	ctx.Set("Content-Disposition", "attachment; filename=pages.zip")
+	return ctx.Send(zipFile)
 }
