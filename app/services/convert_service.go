@@ -9,16 +9,17 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-func ConversionService(fileBuffer *bytes.Buffer, rc *io.ReadCloser) error {
+func ConversionService(rc *io.ReadCloser) (bytes.Buffer, error) {
+	var fileBuffer bytes.Buffer
+	if _, err := io.Copy(&fileBuffer, *rc); err != nil {
+		return fileBuffer, err
+	}
+
 	byteSlice := fileBuffer.Bytes()
 	byteConversion := convertMdToHtml(byteSlice)
 	byteBuffer := bytes.NewBuffer(byteConversion)
-	*fileBuffer = *byteBuffer
-	if _, err := io.Copy(fileBuffer, *rc); err != nil {
-		return err
-	}
 
-	return nil
+	return *byteBuffer, nil
 }
 
 func convertMdToHtml(md []byte) []byte {

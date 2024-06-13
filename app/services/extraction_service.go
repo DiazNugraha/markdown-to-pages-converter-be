@@ -60,9 +60,8 @@ func processFile(zipFile *zip.File, currentDir *types.Directory) error {
 		return err
 	}
 
-	var fileBuffer bytes.Buffer
-
-	if err := ConversionService(&fileBuffer, &rc); err != nil {
+	fileBuffer, err := ConversionService(&rc)
+	if err != nil {
 		return err
 	}
 
