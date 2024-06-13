@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"io"
+	"strings"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -17,9 +18,16 @@ func ConversionService(rc *io.ReadCloser) (bytes.Buffer, error) {
 
 	byteSlice := fileBuffer.Bytes()
 	byteConversion := convertMdToHtml(byteSlice)
-	byteBuffer := bytes.NewBuffer(byteConversion)
+	modifiedString := modifyString(string(byteConversion))
+	byteBuffer := bytes.NewBuffer([]byte(modifiedString))
 
 	return *byteBuffer, nil
+}
+
+func modifyString(text string) string {
+	newString := strings.Replace(text, "{", "&#123;", -1)
+	newString = strings.Replace(newString, "}", "&#125;", -1)
+	return newString
 }
 
 func convertMdToHtml(md []byte) []byte {
