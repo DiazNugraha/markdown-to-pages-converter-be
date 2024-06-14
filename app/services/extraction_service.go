@@ -89,6 +89,7 @@ func processFile(zipFile *zip.File, currentDir *types.Directory) error {
 	}
 
 	dir.Files = append(dir.Files, types.FileBuffer{
+		// TODO: adjust by framework
 		Name:    "+page.svelte",
 		Content: &fileBuffer,
 	})
