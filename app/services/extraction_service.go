@@ -59,13 +59,16 @@ func processFile(zipFile *zip.File, currentDir *types.Directory) error {
 	if err != nil {
 		return err
 	}
+	defer rc.Close()
+
+	if strings.HasSuffix(zipFile.Name, ".md") {
+		return nil
+	}
 
 	fileBuffer, err := ConversionService(&rc)
 	if err != nil {
 		return err
 	}
-
-	defer rc.Close()
 
 	pathParts := strings.Split(zipFile.Name, "/")
 
