@@ -61,9 +61,7 @@ func processFile(zipFile *zip.File, currentDir *types.Directory) error {
 	}
 	defer rc.Close()
 
-	if strings.HasSuffix(zipFile.Name, ".md") {
-		return nil
-	}
+	// TODO: add protection
 
 	fileBuffer, err := ConversionService(&rc)
 	if err != nil {
