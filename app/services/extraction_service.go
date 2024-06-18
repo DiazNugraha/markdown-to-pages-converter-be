@@ -34,7 +34,7 @@ func WriteFileIntoBuffer(file *multipart.FileHeader) (*types.Directory, error) {
 		SubDirs: make(map[string]*types.Directory),
 	}
 
-	for _, zipFile := range zipReader.File {
+	for _, zipFile := range zipReader.File[1:] {
 		if err := processFile(zipFile, rootDir); err != nil {
 			return nil, err
 		}
@@ -71,7 +71,7 @@ func processFile(zipFile *zip.File, currentDir *types.Directory) error {
 	pathParts := strings.Split(zipFile.Name, "/")
 
 	dir := currentDir
-	for _, part := range pathParts[:len(pathParts)-1] {
+	for _, part := range pathParts[1 : len(pathParts)-1] {
 		if subDir, exists := dir.SubDirs[part]; exists {
 			dir = subDir
 		} else {
